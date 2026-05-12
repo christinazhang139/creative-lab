@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { translateVariants } from "../lib/ai";
 
 const LANGUAGES = [
   { code: "en", label: "EN", name: "English" },
@@ -51,13 +52,15 @@ const MOCK_TRANSLATIONS = {
   },
 };
 
-export default function LanguageToggle({ variants, onTranslate, provider = "mock" }) {
+export default function LanguageToggle({ variants, onTranslate, provider = "mock", apiKey = "" }) {
   const [active, setActive] = useState("en");
   const [isTranslating, setIsTranslating] = useState(false);
+  const [error, setError] = useState(null);
 
   const handleSwitch = async (code) => {
     if (code === active) return;
     setIsTranslating(true);
+    setError(null);
     setActive(code);
 
     if (code === "en") {
@@ -69,7 +72,19 @@ export default function LanguageToggle({ variants, onTranslate, provider = "mock
         onTranslate(translated);
       }
     } else {
-      onTranslate(null);
+      try {
+        const translated = await translateVariants(provider, apiKey, variants, code);
+        if (translated) {
+          onTranslate(translated);
+        } else {
+          setError("Translation failed");
+          setActive("en");
+        }
+      } catch (err) {
+        setError(err.message);
+        setActive("en");
+        onTranslate(null);
+      }
     }
     setIsTranslating(false);
   };
@@ -101,6 +116,9 @@ export default function LanguageToggle({ variants, onTranslate, provider = "mock
       )}
       {provider === "mock" && active !== "en" && (
         <span className="text-[9px] font-mono text-text-faint">demo translation</span>
+      )}
+      {error && (
+        <span className="text-[9px] font-mono text-red-500">{error}</span>
       )}
     </div>
   );

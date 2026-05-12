@@ -1,4 +1,4 @@
-import { callExtract, callGenerate, callRefine } from "./providers";
+import { callExtract, callGenerate, callRefine, callTranslate } from "./providers";
 import { getMockHooks, getMockVariants, getMockRefinedVariants } from "./mock-data";
 
 export async function extractHooks(provider, apiKey, text, images = []) {
@@ -23,4 +23,12 @@ export async function refineWithHook(provider, apiKey, hook, hooks) {
     if (result) return result;
   }
   return getMockRefinedVariants(hook, hooks);
+}
+
+export async function translateVariants(provider, apiKey, variants, langCode) {
+  if (provider !== "mock") {
+    const result = await callTranslate(provider, apiKey, variants, langCode);
+    if (result) return result;
+  }
+  return null;
 }

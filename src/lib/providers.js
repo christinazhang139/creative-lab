@@ -186,6 +186,32 @@ export async function callGenerate(provider, apiKey, hooks) {
   return null;
 }
 
+const TRANSLATE_SYSTEM = `You are a professional ad translator. Translate the given multi-channel ad content into the target language while preserving the tone, emoji usage, and platform conventions. Keep the JSON structure exactly the same — only translate the text values. Return JSON only:
+{
+  "google": { "headline": "translated", "description": "translated" },
+  "instagram": { "caption": "translated" },
+  "tiktok": { "scenes": [{ "scene": 1, "visual": "translated", "audio": "translated" }, ...] },
+  "email": { "subject_lines": ["translated 1", "translated 2", "translated 3"] }
+}`;
+
+const LANG_NAMES = { zh: "Simplified Chinese", ja: "Japanese", es: "Spanish", ko: "Korean" };
+
+export async function callTranslate(provider, apiKey, variants, langCode) {
+  const langName = LANG_NAMES[langCode] || langCode;
+  const userContent = `Translate the following ad variants into ${langName}:\n\n${JSON.stringify(variants, null, 2)}`;
+
+  if (provider === "openai") {
+    return openaiChat(apiKey, [{ role: "system", content: TRANSLATE_SYSTEM }, { role: "user", content: userContent }]);
+  }
+  if (provider === "gemini") {
+    return geminiChat(apiKey, TRANSLATE_SYSTEM, userContent);
+  }
+  if (provider === "groq") {
+    return groqChat(apiKey, [{ role: "system", content: TRANSLATE_SYSTEM }, { role: "user", content: userContent }]);
+  }
+  return null;
+}
+
 export async function callRefine(provider, apiKey, hook) {
   const userContent = `Refine all ad variants to align with this hook:\n"${hook.hook}" — ${hook.angle}`;
 

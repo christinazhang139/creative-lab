@@ -7,7 +7,7 @@ import ThemeToggle from "./components/ThemeToggle";
 import ExportPanel from "./components/ExportPanel";
 import HistoryDrawer from "./components/HistoryDrawer";
 import LanguageToggle from "./components/LanguageToggle";
-import { extractHooks, generateAdVariants, refineWithHook } from "./lib/ai";
+import { extractHooks, generateAdVariants, refineWithHook, translateVariants } from "./lib/ai";
 import { saveToHistory } from "./lib/storage";
 
 const STEPS = ["extract", "hooks", "preview"];
@@ -364,7 +364,7 @@ export default function App() {
 
               <div className="flex items-center justify-between flex-wrap gap-3">
                 <ExportPanel hooks={hooks} variants={variants} />
-                <LanguageToggle variants={variants} onTranslate={handleTranslate} provider={provider} />
+                <LanguageToggle variants={variants} onTranslate={handleTranslate} provider={provider} apiKey={apiKey} />
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
