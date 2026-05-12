@@ -7,6 +7,34 @@
 
 Transform raw product descriptions into high-converting ad creatives across Google, Instagram, TikTok, and Email — powered by AI.
 
+### What This Project Demonstrates
+
+- **Full-stack AI product development** — from prompt engineering to multi-provider API integration
+- **Production-grade frontend** — React 19, responsive design, animations, dark mode, export & history
+- **Multi-channel content generation** — platform-specific ad formats (Google Search, Instagram, TikTok, Email)
+- **Enterprise deployment** — Docker containerization, OpenShift/Kubernetes manifests, CI/CD pipeline
+- **Extensible architecture** — provider abstraction, mock-first development, structured JSON output
+
+## How It Works
+
+```
+Product Description  ──▶  AI Extraction  ──▶  3 Selling Hooks (JSON)
+        (+ images)              │
+                                ▼
+                    Multi-Channel Generation
+                                │
+               ┌────────┬───────┼────────┬──────────┐
+               ▼        ▼       ▼        ▼          ▼
+            Google   Instagram TikTok   Email    Translation
+            Search   (+ image) (scenes) (inbox)  (5 languages)
+               │        │       │        │          │
+               └────────┴───────┼────────┴──────────┘
+                                ▼
+                   Click Hook → Refine All Channels
+                                ▼
+                     Export JSON / Copy / Download
+```
+
 ## Demo
 
 ### Input — Product Description
@@ -45,8 +73,8 @@ Transform raw product descriptions into high-converting ad creatives across Goog
 
 **Product Features**
 - Image upload with drag-and-drop (multimodal analysis)
-- Multi-language ad translation (EN / 中文 / 日本語 / Español / 한국어)
-- Export results as JSON or copy to clipboard
+- Multi-language ad translation (EN / 中文 / 日本語 / Español / 한국어) — real AI translation with API key, demo translations in mock mode
+- Export results as JSON — all channels or per-platform, copy to clipboard or download file
 - Session history with localStorage (last 5 generations)
 - Character count validation for Google Ads limits
 - Dark mode with system preference detection
@@ -92,8 +120,17 @@ docker run -p 8080:8080 creative-lab
 ```bash
 oc login --server=<your-cluster-url>
 oc new-project creative-lab
-oc apply -f k8s/
+
+# Option A: Binary build (from local source)
+oc new-build --strategy=docker --binary=true --name=creative-lab
+oc start-build creative-lab --from-dir=. --follow
+
+# Option B: Git-based build (from GitHub)
+oc apply -f k8s/imagestream.yaml k8s/buildconfig.yaml
 oc start-build creative-lab --follow
+
+# Deploy
+oc apply -f k8s/deployment.yaml k8s/service.yaml k8s/route.yaml
 oc get route creative-lab -o jsonpath='{.spec.host}'
 ```
 
@@ -104,20 +141,18 @@ src/
 ├── App.jsx                    # Main app — 3-phase step flow
 ├── lib/
 │   ├── ai.js                 # Unified AI interface with mock fallback
-│   ├── providers.js           # OpenAI / Gemini / Groq adapters
+│   ├── providers.js           # OpenAI / Gemini / Groq adapters + translate
 │   ├── mock-data.js           # Category-aware mock data engine
 │   └── storage.js             # localStorage history manager
-├── hooks/
-│   └── useTypewriter.js       # Typewriter animation hook
 └── components/
-    ├── ExtractionPanel.jsx    # Text input + image upload
-    ├── HooksDisplay.jsx       # Selling hooks with refine interaction
+    ├── ExtractionPanel.jsx    # Text input + image upload (drag-and-drop)
+    ├── HooksDisplay.jsx       # Selling hooks with click-to-refine
     ├── PreviewCards.jsx       # Platform-specific preview cards
     ├── ProviderSelector.jsx   # AI provider switcher + API key input
-    ├── LanguageToggle.jsx     # Multi-language ad translation
-    ├── ExportPanel.jsx        # JSON export + clipboard copy
+    ├── LanguageToggle.jsx     # Multi-language translation (AI or mock)
+    ├── ExportPanel.jsx        # JSON export (all / per-channel) + clipboard
     ├── HistoryDrawer.jsx      # Session history browser
-    └── ThemeToggle.jsx        # Light/dark mode toggle
+    └── ThemeToggle.jsx        # Light/dark mode with localStorage persist
 ```
 
 ## Tech Stack
@@ -131,10 +166,12 @@ src/
 ## Design Decisions
 
 - **Mock-first architecture**: Fully functional without any API key. Keyword-based category detection returns contextual mock data for different product types (sneakers, SaaS, food, e-commerce, fitness, smart home).
-- **Provider abstraction**: Adding a new AI provider requires only a new adapter function in `providers.js` and a registry entry.
+- **Provider abstraction**: Adding a new AI provider requires only a new adapter function in `providers.js` and a registry entry. All providers share the same prompt templates and JSON schema.
+- **Structured JSON throughout**: Hooks and ad variants are always returned as structured JSON — enabling both programmatic use (export/API) and visual rendering (preview cards).
 - **CSS variable theming**: Dark mode works by overriding CSS custom properties — zero JavaScript theme logic in components.
 - **Client-side API keys**: Keys are used directly in browser fetch calls to provider APIs, never sent to any backend. Refreshing the page clears them.
 - **Non-root container**: Uses `nginx-unprivileged` with security context constraints for OpenShift compliance.
+- **Error propagation over silent fallback**: AI errors surface in the UI rather than silently falling back to mock data, so users know when their API key or quota has issues.
 
 ## License
 
