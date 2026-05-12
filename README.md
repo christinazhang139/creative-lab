@@ -1,6 +1,5 @@
 # Creative Lab — AI Ad Generator
 
-[![Deploy with Vercel](https://img.shields.io/badge/Deploy-Vercel-black?style=flat-square&logo=vercel)](https://vercel.com/new/clone?repository-url=https://github.com/christinazhang139/creative-lab)
 [![React](https://img.shields.io/badge/React-19-61dafb?style=flat-square&logo=react)](https://react.dev)
 [![Tailwind](https://img.shields.io/badge/Tailwind-v4-38bdf8?style=flat-square&logo=tailwindcss)](https://tailwindcss.com)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)](LICENSE)
@@ -109,31 +108,6 @@ docker build -t creative-lab .
 docker run -p 8080:8080 creative-lab
 ```
 
-## Deploy
-
-### Vercel (Recommended)
-
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/christinazhang139/creative-lab)
-
-### OpenShift
-
-```bash
-oc login --server=<your-cluster-url>
-oc new-project creative-lab
-
-# Option A: Binary build (from local source)
-oc new-build --strategy=docker --binary=true --name=creative-lab
-oc start-build creative-lab --from-dir=. --follow
-
-# Option B: Git-based build (from GitHub)
-oc apply -f k8s/imagestream.yaml k8s/buildconfig.yaml
-oc start-build creative-lab --follow
-
-# Deploy
-oc apply -f k8s/deployment.yaml k8s/service.yaml k8s/route.yaml
-oc get route creative-lab -o jsonpath='{.spec.host}'
-```
-
 ## Architecture
 
 ```
@@ -143,7 +117,9 @@ src/
 │   ├── ai.js                 # Unified AI interface with mock fallback
 │   ├── providers.js           # OpenAI / Gemini / Groq adapters + translate
 │   ├── mock-data.js           # Category-aware mock data engine
-│   └── storage.js             # localStorage history manager
+│   ├── storage.js             # localStorage history manager
+│   └── __tests__/
+│       └── mock-data.test.js  # Unit tests (Vitest)
 └── components/
     ├── ExtractionPanel.jsx    # Text input + image upload (drag-and-drop)
     ├── HooksDisplay.jsx       # Selling hooks with click-to-refine
