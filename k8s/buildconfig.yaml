@@ -1,0 +1,22 @@
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: creative-lab
+  labels:
+    app: creative-lab
+spec:
+  source:
+    type: Git
+    git:
+      uri: https://github.com/christinazhang139/creative-lab.git
+      ref: main
+  strategy:
+    type: Docker
+    dockerStrategy:
+      dockerfilePath: Dockerfile
+  output:
+    to:
+      kind: ImageStreamTag
+      name: creative-lab:latest
+  triggers:
+    - type: ConfigChange

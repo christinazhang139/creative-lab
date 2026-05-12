@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: creative-lab
+  labels:
+    app: creative-lab
+    app.kubernetes.io/name: creative-lab
+    app.kubernetes.io/part-of: creative-lab
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: creative-lab
+  template:
+    metadata:
+      labels:
+        app: creative-lab
+    spec:
+      containers:
+        - name: creative-lab
+          image: image-registry.openshift-image-registry.svc:5000/creative-lab/creative-lab:latest
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8080
+            initialDelaySeconds: 3
+            periodSeconds: 5
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault
+            capabilities:
+              drop:
+                - ALL
